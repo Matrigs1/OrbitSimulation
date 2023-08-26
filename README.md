@@ -9,7 +9,8 @@ venv = ambiente virtual, para todos contribuintes terem as mesmas versões de li
 
 # Dependências
 O projeto é feito usando Pygame e Scipy. A versão do  Python utilizada é: 3.10.12.
-Versão do Pygame: 2.5.1.
+Versão do pygame-ce: 2.3.1.
+Versão do scipy: 1.11.2.
 
 # Passos para contribuir
 *Primeiro passo*
