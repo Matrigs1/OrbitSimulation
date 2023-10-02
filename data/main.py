@@ -53,7 +53,7 @@ def main():
     frames = pygame.time.Clock()
 
     # Inicializando planetas
-    terra = Planeta(x_sol, y_sol, 250, 10, (0, 0, 255), 1.0)
+    mercurio = Planeta(x_sol, y_sol, 250, 10, (143, 139, 155), 1.0)
 
     # Inicializando pygame_gui
     gui = pygame_gui.UIManager((LARGURA, ALTURA))
@@ -89,7 +89,7 @@ def main():
                 if event.user_type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
                     # Obtendo o valor do slider
                     velocidade_rotacao = slider.get_current_value()
-                    terra.velocidade_angular = 0.02 * velocidade_rotacao
+                    mercurio.velocidade_angular = 0.02 * velocidade_rotacao
                     slider_label.set_text(f"Velocidade: {velocidade_rotacao}x")
 
                 # Processando eventos de botões
@@ -102,14 +102,14 @@ def main():
         # Desenhar a imagem de fundo primeiro
         tela.blit(imagem_fundo, (0, 0))
 
-        # Atualizar a posição da Terra
-        terra.atualizar_posicao()
+        # Atualizar a posição de mercurio
+        mercurio.atualizar_posicao()
 
         # Desenhar a linha de órbita
         pygame.draw.circle(tela, (255, 255, 255), (int(x_sol), int(y_sol)), 250, 1)
 
-        # Desenhar o planeta Terra
-        terra.desenhar(tela)
+        # Desenhar o planeta mercurio
+        mercurio.desenhar(tela)
 
         tela.blit(sol, (x_sol, y_sol))
 
