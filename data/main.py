@@ -7,32 +7,94 @@ import pygame_gui
 # Inicializando o pygame
 pygame.init()
 
-# Setando a largura e a altura da tela, respectivamente.
-LARGURA, ALTURA = 1280, 720
+#Cores a serem utilizadas
 PRETO = (0, 0, 0)
+BRANCO = (255, 255, 255)
+AMARELO = (255, 255, 0)
+AZUL = (100, 149, 237)
+VERMELHO = (188, 39, 50)
+CINZA_ESCURO = (80, 78, 81)
+
+FONTE = pygame.font.SysFont("arial", 16)
+
+# Setando a largura e a altura da tela, respectivamente.
+LARGURA, ALTURA = 1280, 920
+# Passando a largura e altura para o display.
 tela = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Simulação de Órbita")
 
 # Classe que os objetos (planetas), serão instanciados.
 class Planeta:
-    def __init__(self, x, y, raio_orbita, raio, cor, massa):
-        self.x = x
-        self.y = y
-        self.raio_orbita = raio_orbita
-        self.raio = raio
-        self.cor = cor
-        self.massa = massa
-        self.angulo = 0
-        self.velocidade_angular = 0.02  # Velocidade inicial
-        self.velocidade_maxima = 25.0
+	AU = 149.6e6 * 1000
+	G = 6.67428e-11
+	ESCALA = 250 / AU  # 1AU = 100 pixels
+	INTERVALO_TEMPO = 3600*24 # 1 day
 
-    def atualizar_posicao(self):
-        self.x = x_sol + self.raio_orbita * math.cos(self.angulo)
-        self.y = y_sol + self.raio_orbita * math.sin(self.angulo)
-        self.angulo += self.velocidade_angular
+	def __init__(self, x, y, raio, cor, massa):
+		self.x = x
+		self.y = y
+		self.raio = raio
+		self.cor = cor
+		self.massa = massa
 
-    def desenhar(self, tela):
-        pygame.draw.circle(tela, self.cor, (int(self.x), int(self.y)), self.raio)
+		self.orbita = []
+		self.sol = False
+		self.distancia_sol = 0
+
+		self.x_vel = 0
+		self.y_vel = 0
+
+	def desenhar(self, win):
+		x = self.x * self.ESCALA + LARGURA / 2
+		y = self.y * self.ESCALA + ALTURA / 2
+
+		if len(self.orbita) > 2:
+			atualizar_pontos = []
+			for ponto in self.orbita:
+				x, y = ponto
+				x = x * self.ESCALA + LARGURA / 2
+				y = y * self.ESCALA + ALTURA / 2
+				atualizar_pontos.append((x, y))
+
+			pygame.draw.lines(win, self.cor, False, atualizar_pontos, 2)
+
+		pygame.draw.circle(win, self.cor, (x, y), self.raio)
+		
+		if not self.sol:
+			distancia_texto = FONTE.render(f"{round(self.distancia_sol/1000, 1)}km", 1, BRANCO)
+			win.blit(distancia_texto, (x - distancia_texto.get_width()/2, y - distancia_texto.get_height()/2))
+
+	def atracao(self, outro):
+		outro_x, outro_y = outro.x, outro.y
+		distancia_x = outro_x - self.x
+		distancia_y = outro_y - self.y
+		distancia = math.sqrt(distancia_x ** 2 + distancia_y ** 2)
+
+		if outro.sol:
+			self.distancia_sol = distancia
+
+		forca = self.G * self.massa * outro.massa / distancia**2
+		theta = math.atan2(distancia_y, distancia_x)
+		forca_x = math.cos(theta) * forca
+		forca_y = math.sin(theta) * forca
+		return forca_x, forca_y
+
+	def atualizar_posicao(self, planetas):
+		total_fx = total_fy = 0
+		for Planeta in planetas:
+			if self == Planeta:
+				continue
+
+			fx, fy = self.atracao(Planeta)
+			total_fx += fx
+			total_fy += fy
+
+		self.x_vel += total_fx / self.massa * self.INTERVALO_TEMPO
+		self.y_vel += total_fy / self.massa * self.INTERVALO_TEMPO
+
+		self.x += self.x_vel * self.INTERVALO_TEMPO
+		self.y += self.y_vel * self.INTERVALO_TEMPO
+		self.orbita.append((self.x, self.y))
 
 # Carregando imagens e som
 imagem_fundo = pygame.image.load('assets/estrelas.jpg')
@@ -51,13 +113,28 @@ y_sol = (ALTURA / 2) - 200 / 2
 def main():
     rodar = True
     frames = pygame.time.Clock()
+    
+    #Inicializando planetas
+    sol = Planeta(0, 0, 30, AMARELO, 1.98892 * 10**30)
+    sol.sol = True
 
-    # Inicializando planetas
-    mercurio = Planeta(x_sol, y_sol, 250, 10, (143, 139, 155), 1.0)
+    terra = Planeta(-1 * Planeta.AU, 0, 16, AZUL, 5.9742 * 10**24)
+    terra.y_vel = 29.783 * 1000 
 
+    marte = Planeta(-1.524 * Planeta.AU, 0, 12, VERMELHO, 6.39 * 10**23)
+    marte.y_vel = 24.077 * 1000
+
+    mercurio = Planeta(0.387 * Planeta.AU, 0, 8, CINZA_ESCURO, 3.30 * 10**23)
+    mercurio.y_vel = -47.4 * 1000
+
+    venus = Planeta(0.723 * Planeta.AU, 0, 14, BRANCO, 4.8685 * 10**24)
+    venus.y_vel = -35.02 * 1000
+
+    planetas = [sol, terra, marte, mercurio, venus]
+ 
     # Inicializando pygame_gui
     gui = pygame_gui.UIManager((LARGURA, ALTURA))
-
+    
     # Criando uma caixa branca ao redor do slider
     slider_box = pygame.Rect(20, 20, 200, 30)
 
@@ -102,16 +179,9 @@ def main():
         # Desenhar a imagem de fundo primeiro
         tela.blit(imagem_fundo, (0, 0))
 
-        # Atualizar a posição de mercurio
-        mercurio.atualizar_posicao()
-
-        # Desenhar a linha de órbita
-        pygame.draw.circle(tela, (255, 255, 255), (int(x_sol), int(y_sol)), 250, 1)
-
-        # Desenhar o planeta mercurio
-        mercurio.desenhar(tela)
-
-        tela.blit(sol, (x_sol, y_sol))
+        for planeta in planetas:
+            planeta.atualizar_posicao(planetas)
+            planeta.desenhar(tela)
 
         # Atualizar a GUI
         gui.update(1 / 60.0)
