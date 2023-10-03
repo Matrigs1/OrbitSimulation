@@ -25,10 +25,14 @@ pygame.display.set_caption("Simulação de Órbita")
 
 # Classe que os objetos (planetas), serão instanciados.
 class Planeta:
+    # Unidade de medida, que representa os kilometros da terra pro sol. Transformado em metros.
 	AU = 149.6e6 * 1000
+    # Constante gravitacional. É usado para achar a força de atração entre objetos.
 	G = 6.67428e-11
-	ESCALA = 250 / AU  # 1AU = 100 pixels
-	INTERVALO_TEMPO = 3600*24 # 1 day
+    # Escalando os valores reais físicos para os pixels da janela. 1 AU é equivalente a 100 pixels.
+	ESCALA = 250 / AU
+    # Tempo que a simulação irá evoluir. Equivalente a 1 dia.
+	INTERVALO_TEMPO = 3600*24
 
 	def __init__(self, x, y, raio, cor, massa):
 		self.x = x
@@ -41,9 +45,11 @@ class Planeta:
 		self.sol = False
 		self.distancia_sol = 0
 
+        # Velocidades do eixo x e y. Para que haja uma circulação dos planetas, os dois eixos precisam ser incrementados simultaneamente. Em relação ao sol.
 		self.x_vel = 0
 		self.y_vel = 0
 
+    # Desenha os planetas na tela
 	def desenhar(self, win):
 		x = self.x * self.ESCALA + LARGURA / 2
 		y = self.y * self.ESCALA + ALTURA / 2
@@ -64,6 +70,7 @@ class Planeta:
 			distancia_texto = FONTE.render(f"{round(self.distancia_sol/1000, 1)}km", 1, BRANCO)
 			win.blit(distancia_texto, (x - distancia_texto.get_width()/2, y - distancia_texto.get_height()/2))
 
+    # Define a atração dos planetas.
 	def atracao(self, outro):
 		outro_x, outro_y = outro.x, outro.y
 		distancia_x = outro_x - self.x
@@ -79,6 +86,7 @@ class Planeta:
 		forca_y = math.sin(theta) * forca
 		return forca_x, forca_y
 
+    # Atualiza a posição e a velocidade.
 	def atualizar_posicao(self, planetas):
 		total_fx = total_fy = 0
 		for Planeta in planetas:
