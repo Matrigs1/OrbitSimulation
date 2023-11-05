@@ -3,6 +3,7 @@ from pygame.locals import *
 from sys import exit
 import math
 import pygame_gui
+from pygame_gui.elements import UIButton
 
 # Inicializando o pygame
 pygame.init()
@@ -45,6 +46,7 @@ class Planeta:
         self.orbita = []
         self.sol = False
         self.distancia_sol = 0
+        self.pausado = False
 
         # Velocidades do eixo x e y. Para que haja uma circulação dos planetas, os dois eixos precisam ser incrementados simultaneamente. Em relação ao sol.
         self.x_vel = 0
@@ -118,6 +120,17 @@ sol = pygame.transform.scale(sol, (200, 200))
 x_sol = (LARGURA / 2) - 200 / 2
 y_sol = (ALTURA / 2) - 200 / 2
 
+# Controlar estado da simulação
+simulacao_pausada = False
+
+def pausar_simulacao(planetas):
+    for planeta in planetas:
+        planeta.pausado = True
+
+def resumir_simulacao(planetas):
+    for planeta in planetas:
+        planeta.pausado = False
+
 # Função principal
 def main():
     rodar = True
@@ -160,6 +173,18 @@ def main():
         manager = gui,
     )
 
+    botao_pausar = UIButton(
+    relative_rect=pygame.Rect((240, 20), (100, 30)),
+    text="Pausar",
+    manager=gui
+    )
+
+    botao_resumir = UIButton(
+    relative_rect=pygame.Rect((350, 20), (100, 30)),
+    text="Resumir",
+    manager=gui
+    )
+
     while rodar:
         frames.tick(60)
         tela.fill(PRETO)
@@ -185,13 +210,19 @@ def main():
                         pygame.event.post(pygame.event.Event(pygame.USEREVENT, user_type=pygame_gui.UI_HORIZONTAL_SLIDER_MOVED, ui_element=slider))
                     elif event.ui_element == slider.right_button:
                         pygame.event.post(pygame.event.Event(pygame.USEREVENT, user_type=pygame_gui.UI_HORIZONTAL_SLIDER_MOVED, ui_element=slider))
+                    elif event.ui_element == botao_pausar:
+                        pausar_simulacao(planetas)
+                    elif event.ui_element == botao_resumir:
+                        resumir_simulacao(planetas)
 
         # Desenhar a imagem de fundo primeiro
         tela.blit(imagem_fundo, (0, 0))
 
-        for planeta in planetas:
-            planeta.atualizar_posicao(planetas)
-            planeta.desenhar(tela)
+        if not simulacao_pausada:
+            for planeta in planetas:
+                if not planeta.pausado:
+                    planeta.atualizar_posicao(planetas)
+                planeta.desenhar(tela)
 
         # Atualizar a GUI
         gui.update(1 / 60.0)
