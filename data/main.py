@@ -26,83 +26,84 @@ pygame.display.set_caption("Simulação de Órbita")
 # Classe que os objetos (planetas), serão instanciados.
 class Planeta:
     # Unidade de medida, que representa os kilometros da terra pro sol. Transformado em metros.
-	AU = 149.6e6 * 1000
+    AU = 149.6e6 * 1000
     # Constante gravitacional. É usado para achar a força de atração entre objetos.
-	G = 6.67428e-11
+    G = 6.67428e-11
     # Escalando os valores reais físicos para os pixels da janela. 1 AU é equivalente a 100 pixels.
-	ESCALA = 250 / AU
+    ESCALA = 250 / AU
     # Tempo que a simulação irá evoluir. Equivalente a 1 dia.
-	INTERVALO_TEMPO = 3600*24
+    INTERVALO_TEMPO = 3600*24
 
-	def __init__(self, x, y, raio, cor, massa):
-		self.x = x
-		self.y = y
-		self.raio = raio
-		self.cor = cor
-		self.massa = massa
+    def __init__(self, nome, x, y, raio, cor, massa):
+        self.nome = nome
+        self.x = x
+        self.y = y
+        self.raio = raio
+        self.cor = cor
+        self.massa = massa
 
-		self.orbita = []
-		self.sol = False
-		self.distancia_sol = 0
+        self.orbita = []
+        self.sol = False
+        self.distancia_sol = 0
 
         # Velocidades do eixo x e y. Para que haja uma circulação dos planetas, os dois eixos precisam ser incrementados simultaneamente. Em relação ao sol.
-		self.x_vel = 0
-		self.y_vel = 0
+        self.x_vel = 0
+        self.y_vel = 0
 
     # Desenha os planetas na tela
-	def desenhar(self, win):
-		x = self.x * self.ESCALA + LARGURA / 2
-		y = self.y * self.ESCALA + ALTURA / 2
+    def desenhar(self, win):
+        x = self.x * self.ESCALA + LARGURA / 2
+        y = self.y * self.ESCALA + ALTURA / 2
 
-		if len(self.orbita) > 2:
-			atualizar_pontos = []
-			for ponto in self.orbita:
-				x, y = ponto
-				x = x * self.ESCALA + LARGURA / 2
-				y = y * self.ESCALA + ALTURA / 2
-				atualizar_pontos.append((x, y))
+        if len(self.orbita) > 2:
+            atualizar_pontos = []
+            for ponto in self.orbita:
+                x, y = ponto
+                x = x * self.ESCALA + LARGURA / 2
+                y = y * self.ESCALA + ALTURA / 2
+                atualizar_pontos.append((x, y))
 
-			pygame.draw.lines(win, self.cor, False, atualizar_pontos, 2)
+            pygame.draw.lines(win, self.cor, False, atualizar_pontos, 2)
 
-		pygame.draw.circle(win, self.cor, (x, y), self.raio)
-		
-		if not self.sol:
-			distancia_texto = FONTE.render(f"{round(self.distancia_sol/1000, 1)}km", 1, BRANCO)
-			win.blit(distancia_texto, (x - distancia_texto.get_width()/2, y - distancia_texto.get_height()/2))
+        pygame.draw.circle(win, self.cor, (x, y), self.raio)
+        
+        if not self.sol:
+            distancia_texto = FONTE.render(f"{ self.nome } - Distância do sol: { round(self.distancia_sol/1000, 1) }km", 1, BRANCO)
+            win.blit(distancia_texto, (x - distancia_texto.get_width()/2, y - distancia_texto.get_height()/2))
 
     # Define a atração dos planetas.
-	def atracao(self, outro):
-		outro_x, outro_y = outro.x, outro.y
-		distancia_x = outro_x - self.x
-		distancia_y = outro_y - self.y
-		distancia = math.sqrt(distancia_x ** 2 + distancia_y ** 2)
+    def atracao(self, outro):
+        outro_x, outro_y = outro.x, outro.y
+        distancia_x = outro_x - self.x
+        distancia_y = outro_y - self.y
+        distancia = math.sqrt(distancia_x ** 2 + distancia_y ** 2)
 
-		if outro.sol:
-			self.distancia_sol = distancia
+        if outro.sol:
+            self.distancia_sol = distancia
 
-		forca = self.G * self.massa * outro.massa / distancia**2
-		theta = math.atan2(distancia_y, distancia_x)
-		forca_x = math.cos(theta) * forca
-		forca_y = math.sin(theta) * forca
-		return forca_x, forca_y
+        forca = self.G * self.massa * outro.massa / distancia**2
+        theta = math.atan2(distancia_y, distancia_x)
+        forca_x = math.cos(theta) * forca
+        forca_y = math.sin(theta) * forca
+        return forca_x, forca_y
 
     # Atualiza a posição e a velocidade.
-	def atualizar_posicao(self, planetas):
-		total_fx = total_fy = 0
-		for Planeta in planetas:
-			if self == Planeta:
-				continue
+    def atualizar_posicao(self, planetas):
+        total_fx = total_fy = 0
+        for Planeta in planetas:
+            if self == Planeta:
+                continue
 
-			fx, fy = self.atracao(Planeta)
-			total_fx += fx
-			total_fy += fy
+            fx, fy = self.atracao(Planeta)
+            total_fx += fx
+            total_fy += fy
 
-		self.x_vel += total_fx / self.massa * self.INTERVALO_TEMPO
-		self.y_vel += total_fy / self.massa * self.INTERVALO_TEMPO
+        self.x_vel += total_fx / self.massa * self.INTERVALO_TEMPO
+        self.y_vel += total_fy / self.massa * self.INTERVALO_TEMPO
 
-		self.x += self.x_vel * self.INTERVALO_TEMPO
-		self.y += self.y_vel * self.INTERVALO_TEMPO
-		self.orbita.append((self.x, self.y))
+        self.x += self.x_vel * self.INTERVALO_TEMPO
+        self.y += self.y_vel * self.INTERVALO_TEMPO
+        self.orbita.append((self.x, self.y))
 
 # Carregando imagens e som
 imagem_fundo = pygame.image.load('assets/estrelas.jpg')
@@ -123,19 +124,19 @@ def main():
     frames = pygame.time.Clock()
     
     #Inicializando planetas
-    sol = Planeta(0, 0, 30, AMARELO, 1.98892 * 10**30)
+    sol = Planeta("Sol", 0, 0, 30, AMARELO, 1.98892 * 10**30)
     sol.sol = True
 
-    terra = Planeta(-1 * Planeta.AU, 0, 16, AZUL, 5.9742 * 10**24)
+    terra = Planeta("Terra", -1 * Planeta.AU, 0, 16, AZUL, 5.9742 * 10**24)
     terra.y_vel = 29.783 * 1000 
 
-    marte = Planeta(-1.524 * Planeta.AU, 0, 12, VERMELHO, 6.39 * 10**23)
+    marte = Planeta("Marte", -1.524 * Planeta.AU, 0, 12, VERMELHO, 6.39 * 10**23)
     marte.y_vel = 24.077 * 1000
 
-    mercurio = Planeta(0.387 * Planeta.AU, 0, 8, CINZA_ESCURO, 3.30 * 10**23)
+    mercurio = Planeta("Mercúrio", 0.387 * Planeta.AU, 0, 8, CINZA_ESCURO, 3.30 * 10**23)
     mercurio.y_vel = -47.4 * 1000
 
-    venus = Planeta(0.723 * Planeta.AU, 0, 14, BRANCO, 4.8685 * 10**24)
+    venus = Planeta("Venus", 0.723 * Planeta.AU, 0, 14, BRANCO, 4.8685 * 10**24)
     venus.y_vel = -35.02 * 1000
 
     planetas = [sol, terra, marte, mercurio, venus]
@@ -148,15 +149,15 @@ def main():
 
     # Criando um slider de velocidade
     slider = pygame_gui.elements.UIHorizontalSlider(
-        relative_rect=slider_box,
-        start_value=1.0,
-        value_range=(0.1, 25.0),
-        manager=gui,
+        relative_rect = slider_box,
+        start_value = 0.1,
+        value_range = (0.1, 20.0),
+        manager = gui,
     )
     slider_label = pygame_gui.elements.UILabel(
-        relative_rect=pygame.Rect((20, 50), (200, 30)),
-        text="Velocidade: 1x",
-        manager=gui,
+        relative_rect = pygame.Rect((20, 50), (200, 30)),
+        text = "Velocidade: 1x",
+        manager = gui,
     )
 
     while rodar:
@@ -174,8 +175,9 @@ def main():
                 if event.user_type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
                     # Obtendo o valor do slider
                     velocidade_rotacao = slider.get_current_value()
-                    mercurio.velocidade_angular = 0.02 * velocidade_rotacao
-                    slider_label.set_text(f"Velocidade: {velocidade_rotacao}x")
+                    for planeta in planetas:
+                        planeta.INTERVALO_TEMPO *= velocidade_rotacao
+                        slider_label.set_text(f"Velocidade: {velocidade_rotacao}x")
 
                 # Processando eventos de botões
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
