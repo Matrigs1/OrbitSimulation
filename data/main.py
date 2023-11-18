@@ -197,7 +197,7 @@ def main():
             gui.process_events(event)
 
             if event.type == pygame.USEREVENT:
-                if event.user_type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
+                if event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
                     # Obtendo o valor do slider
                     velocidade_rotacao = slider.get_current_value()
                     for planeta in planetas:
@@ -205,7 +205,7 @@ def main():
                         slider_label.set_text(f"Velocidade: {velocidade_rotacao}x")
 
                 # Processando eventos de botões
-                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == slider.left_button:
                         pygame.event.post(pygame.event.Event(pygame.USEREVENT, user_type=pygame_gui.UI_HORIZONTAL_SLIDER_MOVED, ui_element=slider))
                     elif event.ui_element == slider.right_button:
