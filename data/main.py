@@ -46,6 +46,8 @@ class Planeta:
         self.orbita = []
         self.sol = False
         self.distancia_sol = 0
+        self.volta_completa = False
+        self.anos = 0
         self.pausado = False
 
         # Velocidades do eixo x e y. Para que haja uma circulação dos planetas, os dois eixos precisam ser incrementados simultaneamente. Em relação ao sol.
@@ -70,7 +72,7 @@ class Planeta:
         pygame.draw.circle(win, self.cor, (x, y), self.raio)
         
         if not self.sol:
-            distancia_texto = FONTE.render(f"{ self.nome } - Distância do sol: { round(self.distancia_sol/1000, 1) }km", 1, BRANCO)
+            distancia_texto = FONTE.render(f"{ self.nome } - Distância do sol: { round(self.distancia_sol/1000, 1) }km - Anos: {self.anos}", 1, BRANCO)
             win.blit(distancia_texto, (x - distancia_texto.get_width()/2, y - distancia_texto.get_height()/2))
 
     # Define a atração dos planetas.
@@ -106,6 +108,22 @@ class Planeta:
         self.x += self.x_vel * self.INTERVALO_TEMPO
         self.y += self.y_vel * self.INTERVALO_TEMPO
         self.orbita.append((self.x, self.y))
+
+        if len(self.orbita) > 2:
+            # Calcula o vetor posição inicial
+            vetor_inicial = pygame.Vector2(self.orbita[0])
+            # Calcula o vetor posição atual
+            vetor_atual = pygame.Vector2(self.x, self.y)
+
+            # Calcula o ângulo entre os dois vetores em radianos
+            angulo = vetor_atual.angle_to(vetor_inicial)
+
+            # Verifica se o ângulo é próximo de um ciclo completo
+            if 0 <= angulo < 10 and not self.volta_completa:
+                self.anos += 1
+                self.volta_completa = True
+            elif angulo >= 10:
+                self.volta_completa = False
 
 # Carregando imagens e som
 imagem_fundo = pygame.image.load('assets/estrelas.jpg')
