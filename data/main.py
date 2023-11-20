@@ -150,8 +150,8 @@ def resumir_simulacao(planetas):
 
 # Função principal
 def main():
-    rodar = True
-    frames = pygame.time.Clock()
+    rodar = True # Variável que vai controlar o loop da aplicação.
+    frames = pygame.time.Clock() # Controla os frames por segundo da aplicação. Para que a simulação tenha a mesma velocidade em qualquer computador.
     
     #Inicializando planetas
     sol = Planeta("Sol", 0, 0, 30, AMARELO, 1.98892 * 10**30)
@@ -203,8 +203,7 @@ def main():
     )
 
     while rodar:
-        frames.tick(60)
-        tela.fill(PRETO)
+        frames.tick(60) # O loop irá atualizar a um número máximo de 60 vezes por segundo.
 
         for event in pygame.event.get():
             if event.type == QUIT:
