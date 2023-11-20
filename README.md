@@ -28,5 +28,6 @@ Instalando dependências:
 1. Utilizar o ambiente virtual = .\venv\Scripts\activate.bat (Windows) || source venv/bin/activate (Linux)
 2. Instalar as dependências: pip install -r requirements.txt
 
-*Quarto passo (em desenvolvimento)*
-Fazendo updates no repositório da nuvem:
+*Quarto passo*
+1. Alterações no projeto com git add, commit e push.
+2. Dar play no projeto!
