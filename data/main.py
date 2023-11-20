@@ -34,7 +34,7 @@ class Planeta:
     G = 6.67428e-11
     # Escalando os valores reais físicos para os pixels da janela. 1 AU é equivalente a 100 pixels.
     ESCALA = 250 / AU
-    # Tempo que a simulação irá evoluir. Equivalente a 1 dia.
+    # Tempo que a simulação irá evoluir. Equivalente a 1 dia. Significa que cada vez que o planeta irá se movimentar na simulação a cada dia.
     INTERVALO_TEMPO = 3600*24
 
     # Construtor da classe.
@@ -59,19 +59,24 @@ class Planeta:
 
     # Desenha os planetas na tela
     def desenhar(self, win):
-        x = self.x * self.ESCALA + LARGURA / 2
+        # Pega as posições reais dos planetas e escala para o Pygame. 
+        x = self.x * self.ESCALA + LARGURA / 2 # + LARGURA / 2 coloca o planeta na posição x em relação ao meio da tela.
         y = self.y * self.ESCALA + ALTURA / 2
 
+        # Se o planeta tiver assumido mais de duas posições na orbita.
         if len(self.orbita) > 2:
             atualizar_pontos = []
             for ponto in self.orbita:
                 x, y = ponto
                 x = x * self.ESCALA + LARGURA / 2
                 y = y * self.ESCALA + ALTURA / 2
+                # Joga os pontos no array.
                 atualizar_pontos.append((x, y))
 
+            # Desenha os pontos que os planetas assumiram na tela em forma de linha.
             pygame.draw.lines(win, self.cor, False, atualizar_pontos, 2)
 
+        # Desenha os planetas na tela.
         pygame.draw.circle(win, self.cor, (x, y), self.raio)
         
         # Se o planeta em questão não for o sol, mostrar informações pertinentes.
@@ -81,38 +86,55 @@ class Planeta:
 
     # Define a atração dos planetas.
     def atracao(self, outro):
+        # Recebe outro planeta a calcula a distância entre seus pontos.
         outro_x, outro_y = outro.x, outro.y
+        # É subtraído o valor de x e y do outro planeta para o atual.
         distancia_x = outro_x - self.x
         distancia_y = outro_y - self.y
+        # Distância de um planeta para o outro. Lei da gravitação universal de Newton. 
         distancia = math.sqrt(distancia_x ** 2 + distancia_y ** 2)
 
+        # Se o planeta for o sol, guarda a distância do planeta calculada para o sol e aplica ela.
         if outro.sol:
             self.distancia_sol = distancia
 
-        forca = self.G * self.massa * outro.massa / distancia**2
-        theta = math.atan2(distancia_y, distancia_x)
-        forca_x = math.cos(theta) * forca
-        forca_y = math.sin(theta) * forca
+        # Fórmula de força de atração entre objetos.
+        forca = self.G * self.massa * outro.massa / distancia**2 # Força em linha reta. É preciso dividir essa força para X e Y.
+        # Calculando o ângulo.
+        teta = math.atan2(distancia_y, distancia_x)
+        # forca_x é igual ao cosseno 
+        forca_x = math.cos(teta) * forca
+        # forca_y é igual ao seno.
+        forca_y = math.sin(teta) * forca
+        # Retorna as forças de cosseno e seno.
         return forca_x, forca_y
 
     # Atualiza a posição e a velocidade.
     def atualizar_posicao(self, planetas):
+        # Força total atual de x e y são zeradas para 0.
         total_fx = total_fy = 0
+        # Para cada planeta
         for Planeta in planetas:
+            # Se o planeta comparado for o atual, apenas continua a função, pulando a chamada da função de atração.
             if self == Planeta:
                 continue
 
+            # Calcula as forças de atração de cada planeta em relação ao outro.
             fx, fy = self.atracao(Planeta)
             total_fx += fx
             total_fy += fy
 
-        self.x_vel += total_fx / self.massa * self.INTERVALO_TEMPO
+        # Calculando a velocidade de cada planeta.
+        self.x_vel += total_fx / self.massa * self.INTERVALO_TEMPO # Velocidade de x e y de cada planeta.
         self.y_vel += total_fy / self.massa * self.INTERVALO_TEMPO
 
-        self.x += self.x_vel * self.INTERVALO_TEMPO
+        # Distância.
+        self.x += self.x_vel * self.INTERVALO_TEMPO # A velocidade é multiplicada pelo tempo.
         self.y += self.y_vel * self.INTERVALO_TEMPO
+        # Manda os pontos x e y para as orbitas de cada planeta.
         self.orbita.append((self.x, self.y))
 
+        # Lógica para calcular as voltas completas dos planetas. 
         if len(self.orbita) > 2:
             # Calcula o vetor posição inicial
             vetor_inicial = pygame.Vector2(self.orbita[0])
@@ -122,7 +144,7 @@ class Planeta:
             # Calcula o ângulo entre os dois vetores em radianos
             angulo = vetor_atual.angle_to(vetor_inicial)
 
-            # Verifica se o ângulo é próximo de um ciclo completo
+            # Verifica se o ângulo é próximo de um ciclo completo.
             if 0 <= angulo < 10 and not self.volta_completa:
                 self.anos += 1
                 self.volta_completa = True
@@ -154,6 +176,7 @@ def main():
     frames = pygame.time.Clock() # Controla os frames por segundo da aplicação. Para que a simulação tenha a mesma velocidade em qualquer computador.
     
     #Inicializando planetas
+    # Cada planeta recebe: seu nome, x, y, raio, cor e massa.
     sol = Planeta("Sol", 0, 0, 30, AMARELO, 1.98892 * 10**30)
     sol.sol = True
 
@@ -212,10 +235,13 @@ def main():
             # Processando eventos da GUI
             gui.process_events(event)
 
+            # Escuta por ações do usuário (interface).
             if event.type == pygame.USEREVENT:
+                # Slider de velocidade.
                 if event.user_type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
-                    # Obtendo o valor do slider
+                    # A velocidade de rotação recebe o valor que está no slider.
                     velocidade_rotacao = slider.get_current_value()
+                    # Para cada planeta, é alterado o tempo de acordo com a velocidade de rotação. Tempo maior == velocidade maior.
                     for planeta in planetas:
                         planeta.INTERVALO_TEMPO *= velocidade_rotacao
                         slider_label.set_text(f"Velocidade: {velocidade_rotacao}x")
@@ -234,16 +260,20 @@ def main():
         # Desenhar a imagem de fundo primeiro
         tela.blit(imagem_fundo, (0, 0))
 
+        # Condição para pausar o loop.
         if not simulacao_pausada:
             for planeta in planetas:
                 if not planeta.pausado:
+                    # Se não estiver pausado, vai atualizando as posições dos planetas a cada loop.
                     planeta.atualizar_posicao(planetas)
+                # Continua desenhando os elementos na tela.
                 planeta.desenhar(tela)
 
         # Atualizar a GUI
         gui.update(1 / 60.0)
         gui.draw_ui(tela)
 
+        # Permite que apenas uma parte da tela seja atualizada.
         pygame.display.flip()
 
     pygame.quit()
