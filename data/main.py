@@ -1,9 +1,9 @@
-import pygame
+import pygame # Importando o framework do Pygame.
 from pygame.locals import *
-from sys import exit
-import math
-import pygame_gui
-from pygame_gui.elements import UIButton
+from sys import exit # Importando a função exit do sys para controlar o quit da aplicação.
+import math # Módulo de matemática para manipulação dos planetas.
+import pygame_gui # Interface do pygame.
+from pygame_gui.elements import UIButton # Botões da interface.
 
 # Inicializando o pygame
 pygame.init()
@@ -16,12 +16,14 @@ AZUL = (100, 149, 237)
 VERMELHO = (188, 39, 50)
 CINZA_ESCURO = (80, 78, 81)
 
+# Definindo a fonte e tamanho dos textos na aplicação.
 FONTE = pygame.font.SysFont("arial", 16)
 
 # Setando a largura e a altura da tela, respectivamente.
 LARGURA, ALTURA = 1280, 920
-# Passando a largura e altura para o display.
+# Criando janela e passando a largura e altura para o display.
 tela = pygame.display.set_mode((LARGURA, ALTURA))
+# Setando um nome para a janela.
 pygame.display.set_caption("Simulação de Órbita")
 
 # Classe que os objetos (planetas), serão instanciados.
@@ -35,6 +37,7 @@ class Planeta:
     # Tempo que a simulação irá evoluir. Equivalente a 1 dia.
     INTERVALO_TEMPO = 3600*24
 
+    # Construtor da classe.
     def __init__(self, nome, x, y, raio, cor, massa):
         self.nome = nome
         self.x = x
@@ -71,6 +74,7 @@ class Planeta:
 
         pygame.draw.circle(win, self.cor, (x, y), self.raio)
         
+        # Se o planeta em questão não for o sol, mostrar informações pertinentes.
         if not self.sol:
             distancia_texto = FONTE.render(f"{ self.nome } - Distância do sol: { round(self.distancia_sol/1000, 1) }km - Anos: {self.anos}", 1, BRANCO)
             win.blit(distancia_texto, (x - distancia_texto.get_width()/2, y - distancia_texto.get_height()/2))
@@ -132,11 +136,6 @@ imagem_fundo = pygame.transform.scale(imagem_fundo, (LARGURA, ALTURA))
 musica_de_fundo = pygame.mixer.music.load('assets/Interestellar_MainTheme.mp3')
 pygame.mixer.music.set_volume(0.2)
 pygame.mixer.music.play(-1)
-
-sol = pygame.image.load('assets/sol.png').convert_alpha()
-sol = pygame.transform.scale(sol, (200, 200))
-x_sol = (LARGURA / 2) - 200 / 2
-y_sol = (ALTURA / 2) - 200 / 2
 
 # Controlar estado da simulação
 simulacao_pausada = False
