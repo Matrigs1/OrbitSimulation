@@ -1,5 +1,6 @@
 # OrbitSimulation
-Projeto universitário, para a matéria de Programação Científica, visando simular um fenômeno físico.
+Projeto universitário, para a matéria de Programação Científica, visando simular um fenômeno físico, nesse caso, da órbita dos planetas.
+Esse projeto possui cálculos reais de atração, força gravitacional e orbita dos corpos celestes. Todas as medidas utilizadas são reais e adaptadas para pixels na tela.
 
 # Estrutura do projeto
 data = onde todo o código fonte será mantido.
